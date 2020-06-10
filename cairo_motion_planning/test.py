@@ -10,7 +10,7 @@ if __name__ == "__main__":
         joint_bounds = [[joint.name, (joint.limit.lower, joint.limit.upper)] for joint in urdf.joints if joint.limit is not None]
     print(joint_bounds)
     scs = SawyerConfigurationSpace()
-    sampler = UniformSampler(scs.bounds())
+    sampler = UniformSampler(scs.get_bounds())
 
 
     svc = StateValidyChecker()
