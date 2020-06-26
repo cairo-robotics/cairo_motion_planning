@@ -8,4 +8,4 @@ setup(name='cairo_motion_planning',
       author_email='carl.mueller@colorado.edu',
       license='',
       packages=find_packages(),
-      install_requires=[])
+      install_requires=["scikit-learn==0.23.1", "python-igraph==0.8.2"])
