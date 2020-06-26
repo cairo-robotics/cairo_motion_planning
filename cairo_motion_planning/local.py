@@ -64,7 +64,6 @@ def interpolate_5poly(q0, q1, tv, qd0=None, qd1=None):
 
     # compute acceleration
     c = np.array([np.zeros(np.size(A)), np.zeros(np.size(A)), 20 * A, 12 * B, 6 * C,  np.zeros(np.size(A))])
-    print(tt.T.dot(c))
     qddt = tt.T.dot(c) / np.power(timescale, 2);
 
     return qt, qdt, qddt
@@ -99,12 +98,11 @@ class SubdivisionPathIterator():
 
 class IncrementalEvaluation():
 
-    def __init__(self, eval_fn, local_path):
+    def __init__(self, eval_fn):
         self.eval_fn=eval_fn
-        self.local_path=local_path
 
-    def evaluate(self):
-        for point in self.local_path:
+    def evaluate(self, local_path):
+        for point in local_path:
             if not self.eval_fun(point):
                 return False
         return True
@@ -112,12 +110,11 @@ class IncrementalEvaluation():
 
 class SubdividionEvaluation():
 
-    def __init__(self, eval_fn, local_path):
+    def __init__(self, eval_fn):
         self.eval_fn=eval_fn
-        self.local_path=local_path
 
-    def evaluate(self):
-        for point in SubdivisionPathIterator(self.local_path):
+    def evaluate(self, local_path):
+        for point in SubdivisionPathIterator(local_path):
             if not self.eval_fun(point):
                 return False
         return True
