@@ -1,6 +1,6 @@
 import igraph as ig
 
-from local import SubdividionEvaluation
+from cairo_motion_planning.local.eval import SubdividionEvaluation
 from neighbors import NearestNeighbors
 
 class PRM():
@@ -9,9 +9,8 @@ class PRM():
         self.graph = ig.Graph()
         # self.edge_props = EdgePropertyMap()
         # self.vertex_props = VertexPropertyMap()
-        self.sampler = sampler
+        # self.sampler = sampler
         self.state_validity_checker = state_validity_checker
-        self.
 
     def plan(self, q_start, q_goal):
 
@@ -27,7 +26,3 @@ class PRM():
         self.graph.vs[0]["q"] = q_start
         self.graph.add_vertex("goal")
         self.graph.vs[1]["q"] = q_goal
-
-
-
-"""
