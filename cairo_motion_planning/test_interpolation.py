@@ -1,4 +1,4 @@
-from local import interpolate_5poly
+from local.interpolation import interpolate_5poly, lerp
 import numpy as np
 
 if __name__ == "__main__":
@@ -13,3 +13,5 @@ if __name__ == "__main__":
     print(qdt)
 
     print(qddt)
+
+    lerp(q0, q1, 10)
