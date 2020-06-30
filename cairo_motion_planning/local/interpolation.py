@@ -1,5 +1,6 @@
 import numpy as np
-from scipy.ndimage import map_coordinates
+from scipy import interpolate
+
 
 def interpolate_5poly(q0, q1, tv, qd0=None, qd1=None):
     """
@@ -10,39 +11,36 @@ def interpolate_5poly(q0, q1, tv, qd0=None, qd1=None):
     acceleration can be optionally returned as qdt (MxN) and qddt (MxN) respectively.
     The trajectory qt, qdt and qddt are MxN matrices, with one row per time step,
     and one column per joint.
-    
-    Interpolating between points can be 
-    
-    The code in this function was adopted from the Robotics Toolbox jtraj function.
-    
-    Copyright (C) 1993-2017, by Peter I. Corke
-    
+
+    The code in this function was adopted from the Robotics Toolbox jtraj function. Copyright (C) 1993-2017, by Peter I. Corke
+
     Args:
         q0 (ndarray): 1xN starting configuration vector
         q1 (ndarray): 1xN ending configuration vector
         tv (ndarray or int): Timesteps
         qd0 (ndarray, optional): Initial velocity
         qd1 (ndarray, optional): Final velocity
-    
+
     Returns:
         ndarray, ndarray, ndarray: MXN matrix of positions, velocities, and acclerations at each time step.
     """
-    # Normalize time steps either given the number of steps (int) 
+    # Normalize time steps either given the number of steps (int)
     if type(tv) is list and len(tv) > 1:
         # Get the max timescale
-        timescale = max(tv);
+        timescale = max(tv)
         # divide all times by the max to normalize.
-        t = tv / timescale;
+        t = tv / timescale
     else:
         timescale = 1
-        t = [x / (tv - 1) for x in range(0, tv)]  # % normalized time from 0 -> 1
+        # % normalized time from 0 -> 1
+        t = [x / (tv - 1) for x in range(0, tv)]
 
     q0 = q0
     q1 = q1
 
     if qd0 is None and qd1 is None:
-        qd0 = np.zeros(np.size(q0));
-        qd1 = qd0;
+        qd0 = np.zeros(np.size(q0))
+        qd1 = qd0
     else:
         qd0 = qd0
         qd1 = qd1
@@ -53,22 +51,25 @@ def interpolate_5poly(q0, q1, tv, qd0=None, qd1=None):
     E = qd0 * timescale  # as the t vector has been normalized
     F = q0
 
-    tt = np.array([np.power(t, 5), np.power(t, 4), np.power(t, 3), np.power(t, 2), t, np.ones(np.size(t))])
+    tt = np.array([np.power(t, 5), np.power(t, 4), np.power(
+        t, 3), np.power(t, 2), t, np.ones(np.size(t))])
     c = np.array([A, B, C, np.zeros(np.size(A)), E, F])
     qt = tt.T.dot(c)
 
-
     # compute velocity
-    c = np.array([np.zeros(np.size(A)), 5 * A, 4 * B, 3 * C,  np.zeros(np.size(A)), E])
-    qdt = tt.T.dot(c) / timescale;
+    c = np.array([np.zeros(np.size(A)), 5 * A, 4 *
+                  B, 3 * C,  np.zeros(np.size(A)), E])
+    qdt = tt.T.dot(c) / timescale
 
     # compute acceleration
-    c = np.array([np.zeros(np.size(A)), np.zeros(np.size(A)), 20 * A, 12 * B, 6 * C,  np.zeros(np.size(A))])
-    qddt = tt.T.dot(c) / np.power(timescale, 2);
+    c = np.array([np.zeros(np.size(A)), np.zeros(np.size(A)),
+                  20 * A, 12 * B, 6 * C,  np.zeros(np.size(A))])
+    qddt = tt.T.dot(c) / np.power(timescale, 2)
 
     return qt, qdt, qddt
 
 
-def lerp(q0, q1, tv):
-    times = [x / (tv - 1) for x in range(0, tv)]  # % normalized time from 0 -> 1
-    map_coordinates(np.array([q0, q1]), times)
+def parametric_lerp(q0, q1, steps):
+    times = [x / (steps - 1)
+             for x in range(0, steps)]  # % normalized time from 0 -> 1
+    return [list(t*(q1-q0) + q0) for t in times]
