@@ -1,4 +1,4 @@
-from local.interpolation import interpolate_5poly, lerp
+from local.interpolation import interpolate_5poly, parametric_lerp
 import numpy as np
 
 if __name__ == "__main__":
@@ -14,4 +14,7 @@ if __name__ == "__main__":
 
     print(qddt)
 
-    lerp(q0, q1, 10)
+    q0 = np.array([1, 1.5, 1.8])
+    q1 = np.array([2, 2, 2])
+    print(parametric_lerp(q0, q1, 10))
+
