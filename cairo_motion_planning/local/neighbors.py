@@ -1,25 +1,69 @@
 from sklearn.neighbors import KDTree
 
+
 class NearestNeighbors():
+    """
+    Wrapper class to interface into various Nearest Neighbor models.
+    
+    TODO: Currently only supports KDTree. This may be all that is needed for now.
 
-	def __init__(self, X, k=3, model_type="KDTree", model_args=[], model_kwargs={}):
-		self.X = X
-		self.k = k
-		self.model_type = model_type
-		self.model_args = model_args
-		self.model_kwargs = model_kwargs
-		self._init_model()
+    Args:
+        X (array-like): NxD array-like data. N is number of samples, D is number of dimensions
+        model_type (str, optional): [description]. Determines the choice of model. Defaults to "KDTree".
+        model_args (list, optional): [description]. Args to pass to the chosen model. Defaults to None.
+        model_kwargs (dict, optional): [description]. Keyword args to pass to the chosen model. Defaults to None.
+    """
 
-	def _init_model(self):
-		if self.model_type == "KDTree":
-			self.model = KDTree(self.X, *self.model_args, **self.model_kwargs)
-		else:
-			raise ValueError("{} is not a valid value for model_type".format(self.model_type))
+    def __init__(self, X, model_type="KDTree", model_args=None, model_kwargs=None):
+        """
+        Will fit initial model upon instantiation. 
+    
+        Args:
+            X (array-like): NxD array-like data. N is number of samples, D is number of dimensions
+            model_type (str, optional): [description]. Determines the choice of model. Defaults to "KDTree".
+            model_args (list, optional): [description]. Args to pass to the chosen model. Defaults to None.
+            model_kwargs (dict, optional): [description]. Keyword args to pass to the chosen model. Defaults to None.
+        
+        Raises:
+            ValueError: Error if model type not available for use 
+        """
+        self.available_model = ['KDTree']
+        self.X = X
+        if model_type not in self.available_model:
+            raise ValueError(
+                "{} is not a valid value for model_type. Must be one of {}".format(self.model_type, self.available_models))
+        else:
+            self.model_type = model_type
+        self.model_args = model_args if model_args is not None else []
+        self.model_kwargs = model_kwargs if model_kwargs is not None else {}
+        self.fit()
 
-	def append(self, x):
-		self.X.append(x)
-		self._init_model()
+    def fit(self):
+        """
+        Fits the chosen model on the current data set X.
+        """
+        if self.model_type == "KDTree":
+            self.model = KDTree(self.X, *self.model_args, **self.model_kwargs)
 
-	def query(self, x):
-		return self.model.query(x, k=self.k) 
 
+    def append(self, x):
+        """
+        Adds x to the dataset X. Will NOT refit the model unless explicitly asked to do so via fit().
+    
+        Args:
+            x (array-like): 1xD vector.
+        """
+        self.X.append(x)
+
+    def query(self, x_t, k=3):
+        """[
+        Queries the fitted nearest neighbor model for k-nearest neighbors. 
+
+        Args:
+            x (array-like): 1xD vector test query.
+            k (int): The number of neighbors.
+
+        Returns:
+            [array-like]: Returns the result of the model.
+        """
+        return self.model.query(x_t, k=k)
