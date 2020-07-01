@@ -2,8 +2,7 @@
 Interfaces for state validity checking.
 """
 
-
-class StateValidyChecker():
+class StateValidityChecker(): #TODO: Fix this disgusting typo
 
     """
     This StateValidityChecker class expects a collision checking function, a self collision checking function, 

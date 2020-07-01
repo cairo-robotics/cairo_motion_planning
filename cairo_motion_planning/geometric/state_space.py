@@ -10,13 +10,10 @@ class SawyerConfigurationSpace():
     Very specific configuration space according to Sawyer's articulated design. Difficult to apply a generic topology space to complex articulated arm with joint limts.
 
     Attributes:
-        joint_bounds (TYPE): Description
+        joint_bounds (list): List of joint range limits. 
     """
 
     def __init__(self):
-        """Summary
-
-        """
         self.joint_bounds = [['right_j0', (-3.0503, 3.0503)],
                              ['right_j1', (-3.8095, 2.2736)],
                              ['right_j2', (-3.0426, 3.0426)],

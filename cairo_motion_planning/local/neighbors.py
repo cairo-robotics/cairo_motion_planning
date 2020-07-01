@@ -55,15 +55,15 @@ class NearestNeighbors():
         """
         self.X.append(x)
 
-    def query(self, x_t, k=3):
+    def query(self, x_test, k=3):
         """[
         Queries the fitted nearest neighbor model for k-nearest neighbors. 
 
         Args:
-            x (array-like): 1xD vector test query.
+            x_test (array-like): 1xD vector test query.
             k (int): The number of neighbors.
 
         Returns:
             [array-like]: Returns the result of the model.
         """
-        return self.model.query(x_t, k=k)
+        return self.model.query(x_test, k=k)

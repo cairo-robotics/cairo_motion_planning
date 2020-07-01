@@ -35,7 +35,7 @@ def interpolate_5poly(q0, q1, tv, qd0=None, qd1=None):
         qd1 (ndarray, optional): Final velocity
 
     Returns:
-        ndarray, ndarray, ndarray: MXN matrix of positions, velocities, and acclerations at each time step.
+        ndarray, ndarray, ndarray: MXN matrices of positions, velocities, and acclerations at each time step.
     """
     # Normalize time steps either given the number of steps (int)
     if type(tv) is list and len(tv) > 1:
@@ -83,6 +83,27 @@ def interpolate_5poly(q0, q1, tv, qd0=None, qd1=None):
 
 
 def parametric_lerp(q0, q1, steps):
+    """
+    This function directly interpolates between the start q0 and q1, element-wise parametrically
+    via the discretized interval determined by the number of steps.
+
+    Args:
+        q0 (ndarray): Numpy vector representing the starting point.
+        q1 (ndarray): Numpy vector representing the ending point.
+        steps (int): Number of discrete steps to take.
+
+    Returns:
+        [ndarray]: Numpy array of the interpolation between q0 and q1.
+    """
     times = [x / (steps - 1)
              for x in range(0, steps)]  # % normalized time from 0 -> 1
-    return [list(t*(q1-q0) + q0) for t in times]
+    return np.array([t*(q1-q0) + q0 for t in times])
+
+if __name__ == "__main__":
+    path = parametric_lerp(np.array([0,0]), np.array([10, 10]), 100)
+    test = np.array([[0, 1], [1, 2], [3, 3], [6, 5]])
+    print(cumulative_distance(test))
+    print(cumulative_distance(path))
+
+    path = interpolate_5poly(np.array([0,0,0,0,0,0,0]), np.array([.21, .32, .53, 1.24, -2.11, -3.1, .9]), 100)
+    print(cumulative_distance(path))
