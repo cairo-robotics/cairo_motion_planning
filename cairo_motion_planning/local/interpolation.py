@@ -1,13 +1,26 @@
 import numpy as np
 from scipy import interpolate
 
+def cumulative_distance(local_path):
+    """
+    Calculates the cumulative euclidean distnace sum of a sequence of vectors.
+    The distance between each consecutive point is calculated and summed. 
+
+    Args:
+        local_path (float): Numpy array of vectors representing a local path.
+    
+    Returns:
+        int: The cumulative euclidean distance.
+    """
+    distance = np.sum(np.sqrt(np.sum(np.diff(local_path, axis=0)**2,1)))
+    return distance
 
 def interpolate_5poly(q0, q1, tv, qd0=None, qd1=None):
     """
     This function produces a joint space trajectory qt (MxN) where the joint
-    coordinates vary from q0 (1xN) to q1 (1xN).  A quintic (5th order) polynomial is used 
-    with default zero boundary conditions for velocity and acceleration.  
-    Time is assumed to vary from 0 to 1 in M (tv) steps.  Joint velocity and 
+    coordinates vary from q0 (1xN) to q1 (1xN).  A quintic (5th order) polynomial is used
+    with default zero boundary conditions for velocity and acceleration.
+    Time is assumed to vary from 0 to 1 in M (tv) steps.  Joint velocity and
     acceleration can be optionally returned as qdt (MxN) and qddt (MxN) respectively.
     The trajectory qt, qdt and qddt are MxN matrices, with one row per time step,
     and one column per joint.
