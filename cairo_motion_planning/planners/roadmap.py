@@ -24,8 +24,9 @@ class PRM():
             if self._validate(q_rand):
                 neighbors = self.nn.query(q_rand, k=3)
                 refit_nn = False
-                # If a random sample is successfully reached by from one of the nearest neighbors, it will be added to the graph. It does not need to be re-added more than once.
-                added_to_graph = False 
+                # If a random sample is successfully reached by from one of the nearest neighbors, it will be added to the graph.
+                # This flag ensures that it is not added more than once.
+                added_to_graph = False
                 for q_near in neighbors:
                     successful, local_path = self._extend(q_near, q_rand)
                     if successful:
@@ -41,10 +42,10 @@ class PRM():
             return self.best_path()
         else:
             return []
-    
+
     def best_path(self):
         return self.graph.shortest_paths_dijkstra([0], [1], weights="weight")
-        
+
     def _init_graph(self, q_start, q_goal):
         self.graph.add_vertex("start")
         # Start is always at the 0 index.
@@ -54,9 +55,6 @@ class PRM():
         self.graph.vs[1]["q"] = q_goal
         self.nn = NearestNeighbors(X=np.array(
             [q_start, q_goal]), model_kwargs={"leaf_size": 40})
-
-    def _weight(self, local_path):
-        return cumulative_distance(local_path)
 
     def _validate(self, sample):
         return self.svc.validate(sample)
@@ -74,15 +72,19 @@ class PRM():
             return True, local_path
         else:
             return False, []
-        
+
     def _sample(self):
-        return self.sampler.sample()        
-    
+        return self.sampler.sample()
+
     def _add_vextex_to_graph(self, sample):
-        self.graph.add_vertex(None, **{'value': list(q_rand)})
+        self.graph.add_vertex(None, **{'value': list(sample)})
 
     def _add_edge_to_graph(self, q_near, q_sample, local_path):
-        pass
-    
+        self.graph.add_edge(self._idx_of_point(q_near), self._idx_of_point(
+            q_sample), **{'weight': self._weight(local_path)})
+
+    def _weight(self, local_path):
+        return cumulative_distance(local_path)
+
     def _idx_of_point(self, point):
         return self.graph.vs['value'].index(list(point))
