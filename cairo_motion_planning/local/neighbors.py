@@ -1,3 +1,4 @@
+import numpy as np
 from sklearn.neighbors import KDTree
 
 
@@ -53,7 +54,7 @@ class NearestNeighbors():
         Args:
             x (array-like): 1xD vector.
         """
-        self.X.append(x)
+        self.X = np.concatenate((self.X, [x]), axis=0)
 
     def query(self, x_test, k=3):
         """[
@@ -64,6 +65,7 @@ class NearestNeighbors():
             k (int): The number of neighbors.
 
         Returns:
-            [array-like]: Returns the result of the model.
+            [ndarray], [ndarray]: Returns the ndarray of distances to each neighbor and ndarray of neighbor points.
         """
-        return self.model.query(x_test, k=k)
+        distances, indices = self.model.query([x_test], k=k)
+        return  distances[0], [list(self.X[idx]) for idx in indices[0]]
