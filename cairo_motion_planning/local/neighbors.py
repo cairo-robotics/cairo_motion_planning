@@ -65,6 +65,7 @@ class NearestNeighbors():
             k (int): The number of neighbors.
 
         Returns:
-            [array-like]: Returns the result of the model.
+            [ndarray], [ndarray]: Returns the ndarray of distances to each neighbor and ndarray of neighbor points.
         """
-        return self.model.query(x_test, k=k)
+        distances, indices = self.model.query([x_test], k=k)
+        return  distances[0], [list(self.X[idx]) for idx in indices[0]]
