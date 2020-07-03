@@ -2,7 +2,7 @@
 Interfaces for state validity checking.
 """
 
-class StateValidityChecker(): #TODO: Fix this disgusting typo
+class StateValidityChecker():
 
     """
     This StateValidityChecker class expects a collision checking function, a self collision checking function, 
@@ -15,13 +15,15 @@ class StateValidityChecker(): #TODO: Fix this disgusting typo
         validity_funcs (list): List of other state validating functions.
     """
 
-    def __init__(self, self_col_func, col_func=None, validity_funcs=None):
+    def __init__(self, self_col_func=None, col_func=None, validity_funcs=None):
         """
         Args:
             col_func (func): External collisions between moving objects and environment object.
             self_col_func (func): Self-collision checking function
             validity_funcs (list): List of other state validating functions.
         """
+        if self_col_func is None and col_func is None and validity_funcs is None:
+            raise ValueError("State Validity Checking cannot be performed if not validity functions of any kind are given.")
         self.self_col_func = self_col_func
         self.col_func = col_func
         self.validity_funcs = validity_funcs
@@ -39,7 +41,7 @@ class StateValidityChecker(): #TODO: Fix this disgusting typo
         if self.validity_funcs is not None:
             if not all([func(sample) for func in self.validity_funcs]):
                 return False
-        if not self.self_col_func(sample):
+        if self.self_col_func is not None and not self.self_col_func(sample):
             return False
         if self.col_func is not None and not self.col_func(sample):
             return False
