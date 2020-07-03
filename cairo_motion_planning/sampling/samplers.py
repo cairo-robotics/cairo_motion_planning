@@ -9,25 +9,16 @@ class UniformSampler():
     """
     Uniformly samples at random each dimension given the provided limits.
 
-    Attributes:
-        dimension_limits (list): list of tuples indicated limited range of each dimension.
     """
 
-    def __init__(self, dimension_limits):
-        """
-        Args:
-        dimension_limits (list): list of tuples indicated limited range of each dimension.
-        """
-        self.dimension_limits = dimension_limits
-
-    def sample(self):
+    def sample(self, dimension_limits):
         """
         Samples a random sample.
 
         Returns:
             list: Random sample.
         """
-        return [random.uniform(limit[0], limit[1]) for limit in self.dimension_limits]
+        return [random.uniform(limit[0], limit[1]) for limit in dimension_limits]
 
 
 class GaussianSampler():
