@@ -1,4 +1,5 @@
 from math import inf
+from itertools import tee
 
 import numpy as np
 import igraph as ig
@@ -15,7 +16,7 @@ class PRM():
         self.state_space = state_space
         self.svc = state_validity_checker
         self.interp_fn = interpolation_fn
-        self.max_iters = params.get('max_iters', 1000)
+        self.max_iters = params.get('max_iters', 5000)
         self.k = params.get('k', 3)
         self.ball_radius = params.get('ball_radius', 2)
 
@@ -34,12 +35,22 @@ class PRM():
                 self.nn.fit()
             iters += 1
         if self._success():
-            return self.best_path()
+            return self.best_path()[0]
         else:
             return []
 
     def best_path(self):
         return self.graph.get_all_shortest_paths('start', 'goal', weights='weight')
+    
+    def get_path(self, plan):
+        points = [self.graph.vs[idx]['value'] for idx in plan]
+        pairs = list(zip(points, points[1:]))
+        segments = [self.interp_fn(np.array(p[0]), np.array(p[1])) for p in pairs]
+        segments = [[list(val) for val in seg] for seg in segments]
+        path = []
+        for seg in segments:
+            path = path + seg
+        return path
 
     def _init_roadmap(self, q_start, q_goal):
         self.graph.add_vertex("start")
@@ -58,7 +69,7 @@ class PRM():
         self.nn.fit()
 
     def _success(self):
-        paths = self.graph.get_all_shortest_paths('start', 'goal')
+        paths = self.graph.shortest_paths_dijkstra('start', 'goal')
         if len(paths) > 0 and paths[0][0] != inf:
             return True
         return False
@@ -67,7 +78,7 @@ class PRM():
         return self.svc.validate(sample)
 
     def _extend(self, q_near, q_rand):
-        local_path = self.interp_fn(q_near, q_rand, steps=50)
+        local_path = self.interp_fn(q_near, q_rand)
         valid = subdivision_evaluate(self.svc.validate, local_path)
         if valid:
             return True, local_path
