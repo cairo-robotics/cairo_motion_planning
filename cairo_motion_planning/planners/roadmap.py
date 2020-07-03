@@ -1,3 +1,5 @@
+from math import inf
+
 import numpy as np
 import igraph as ig
 
@@ -8,75 +10,79 @@ from local.neighbors import NearestNeighbors
 
 class PRM():
 
-    def __init__(self, state_space, sampler, state_validity_checker, interpolation_fn, iterations):
+    def __init__(self, state_space, state_validity_checker, interpolation_fn, params):
         self.graph = ig.Graph()
-        self.sampler = sampler
+        self.state_space = state_space
         self.svc = state_validity_checker
         self.interp_fn = interpolation_fn
-        self.iterations = iterations
+        self.max_iters = params.get('max_iters', 1000)
+        self.k = params.get('k', 3)
+        self.ball_radius = params.get('ball_radius', 2)
 
     def plan(self, q_start, q_goal):
         iters = 0
-        self._init_graph(q_start, q_goal)
-        while not self._success() or iters < self.iterations:
-            iters += 1
+        self._init_roadmap(q_start, q_goal)
+        while not self._success() or iters < self.max_iters:
             q_rand = self._sample()
             if self._validate(q_rand):
-                neighbors = self.nn.query(q_rand, k=3)
-                refit_nn = False
-                # If a random sample is successfully reached by from one of the nearest neighbors, it will be added to the graph.
-                # This flag ensures that it is not added more than once.
-                added_to_graph = False
+                self._add_vextex(q_rand)
+                neighbors = self._neighbors(q_rand)
                 for q_near in neighbors:
                     successful, local_path = self._extend(q_near, q_rand)
                     if successful:
-                        if not added_to_graph:
-                            self._add_vextex_to_graph(q_rand)
-                            added_to_graph = True
-                            self.nn.append(q_rand)
-                            refit_nn = True
                         self._add_edge_to_graph(q_near, q_rand, local_path)
-                if refit_nn:
-                    self.nn.fit()
+                self.nn.fit()
+            iters += 1
         if self._success():
             return self.best_path()
         else:
             return []
 
     def best_path(self):
-        return self.graph.shortest_paths_dijkstra([0], [1], weights="weight")
+        return self.graph.get_all_shortest_paths('start', 'goal', weights='weight')
 
-    def _init_graph(self, q_start, q_goal):
+    def _init_roadmap(self, q_start, q_goal):
         self.graph.add_vertex("start")
         # Start is always at the 0 index.
-        self.graph.vs[0]["q"] = q_start
+        self.graph.vs[0]["value"] = list(q_start)
         self.graph.add_vertex("goal")
         # Goal is always at the 1 index.
-        self.graph.vs[1]["q"] = q_goal
+        self.graph.vs[1]["value"] = list(q_goal)
         self.nn = NearestNeighbors(X=np.array(
             [q_start, q_goal]), model_kwargs={"leaf_size": 40})
+        # seed the roadmap with a few random samples to build enough neighbors
+        while len(self.nn.X) <= self.k + 1:
+            q_rand = self._sample()
+            if self._validate(q_rand):
+                self._add_vextex(q_rand)
+        self.nn.fit()
+
+    def _success(self):
+        paths = self.graph.get_all_shortest_paths('start', 'goal')
+        if len(paths) > 0 and paths[0][0] != inf:
+            return True
+        return False
 
     def _validate(self, sample):
         return self.svc.validate(sample)
 
-    def _success(self):
-        paths = self.graph.shortest_paths_dijkstra([0], [1], weights="weight")
-        if len(paths) > 0:
-            return True
-        return False
-
     def _extend(self, q_near, q_rand):
-        local_path = self.interp_fn(q_near, q_rand)
+        local_path = self.interp_fn(q_near, q_rand, steps=50)
         valid = subdivision_evaluate(self.svc.validate, local_path)
         if valid:
             return True, local_path
         else:
             return False, []
+        
+    def _neighbors(self, sample):
+        distances, neighbors = self.nn.query(sample, k=self.k)
+        return [point for idx, point in enumerate(neighbors) if distances[idx] <= self.ball_radius]
 
     def _sample(self):
-        return self.sampler.sample()
+        return np.array(self.state_space.sample())
 
-    def _add_vextex_to_graph(self, sample):
+    def _add_vextex(self, sample):
+        self.nn.append(sample)
         self.graph.add_vertex(None, **{'value': list(sample)})
 
     def _add_edge_to_graph(self, q_near, q_sample, local_path):
