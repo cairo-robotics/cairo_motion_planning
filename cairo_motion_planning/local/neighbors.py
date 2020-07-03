@@ -1,3 +1,4 @@
+import numpy as np
 from sklearn.neighbors import KDTree
 
 
@@ -53,7 +54,7 @@ class NearestNeighbors():
         Args:
             x (array-like): 1xD vector.
         """
-        self.X.append(x)
+        self.X = np.concatenate((self.X, [x]), axis=0)
 
     def query(self, x_test, k=3):
         """[
