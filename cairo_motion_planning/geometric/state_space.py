@@ -1,4 +1,4 @@
-from sampling.samplers import UniformSampler
+from cairo_motion_planning.sampling.samplers import UniformSampler
 
 
 class R2():
