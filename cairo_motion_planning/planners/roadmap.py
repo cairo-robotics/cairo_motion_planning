@@ -4,9 +4,9 @@ from itertools import tee
 import numpy as np
 import igraph as ig
 
-from local.evaluation import subdivision_evaluate
-from local.interpolation import cumulative_distance
-from local.neighbors import NearestNeighbors
+from cairo_motion_planning.local.evaluation import subdivision_evaluate
+from cairo_motion_planning.local.interpolation import cumulative_distance
+from cairo_motion_planning.local.neighbors import NearestNeighbors
 
 
 class PRM():
@@ -18,12 +18,14 @@ class PRM():
         self.interp_fn = interpolation_fn
         self.max_iters = params.get('max_iters', 5000)
         self.k = params.get('k', 3)
-        self.ball_radius = params.get('ball_radius', 2)
+        self.ball_radius = params.get('ball_radius', 5)
+        self.min_iters = params.get('min_iters', 2000)
 
     def plan(self, q_start, q_goal):
         iters = 0
         self._init_roadmap(q_start, q_goal)
-        while not self._success() or iters < self.max_iters:
+        while iters < self.min_iters or not self._success():
+            if iters >= self.max_iters: break
             q_rand = self._sample()
             if self._validate(q_rand):
                 self._add_vextex(q_rand)
@@ -60,7 +62,7 @@ class PRM():
         # Goal is always at the 1 index.
         self.graph.vs[1]["value"] = list(q_goal)
         self.nn = NearestNeighbors(X=np.array(
-            [q_start, q_goal]), model_kwargs={"leaf_size": 40})
+            [q_start, q_goal]), model_kwargs={"leaf_size": 5000})
         # seed the roadmap with a few random samples to build enough neighbors
         while len(self.nn.X) <= self.k + 1:
             q_rand = self._sample()
