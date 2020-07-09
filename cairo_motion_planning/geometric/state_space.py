@@ -41,7 +41,7 @@ class SawyerConfigurationSpace():
                        ['right_j3', (-3.0439, 3.0439)],
                        ['right_j4', (-2.9761, 2.9761)],
                        ['right_j5', (-2.9761, 2.9761)],
-                       ['right_j6', (-3.14, 3.14)],
+                       ['right_j6', (-4.7124, 4.7124)],
                        ['right_gripper_l_finger_joint', (0.0, 0.020833)],
                        ['right_gripper_r_finger_joint',
                         (-0.020833, 0.0)],
