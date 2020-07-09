@@ -28,7 +28,7 @@ class PRM():
             if iters >= self.max_iters: break
             q_rand = self._sample()
             if self._validate(q_rand):
-                self._add_vextex(q_rand)
+                self._add_vertex(q_rand)
                 neighbors = self._neighbors(q_rand)
                 for q_near in neighbors:
                     successful, local_path = self._extend(q_near, q_rand)
@@ -62,12 +62,12 @@ class PRM():
         # Goal is always at the 1 index.
         self.graph.vs[1]["value"] = list(q_goal)
         self.nn = NearestNeighbors(X=np.array(
-            [q_start, q_goal]), model_kwargs={"leaf_size": 5000})
+            [q_start, q_goal]), model_kwargs={"leaf_size": 50})
         # seed the roadmap with a few random samples to build enough neighbors
         while len(self.nn.X) <= self.k + 1:
             q_rand = self._sample()
             if self._validate(q_rand):
-                self._add_vextex(q_rand)
+                self._add_vertex(q_rand)
         self.nn.fit()
 
     def _success(self):
@@ -94,7 +94,7 @@ class PRM():
     def _sample(self):
         return np.array(self.state_space.sample())
 
-    def _add_vextex(self, sample):
+    def _add_vertex(self, sample):
         self.nn.append(sample)
         self.graph.add_vertex(None, **{'value': list(sample)})
 
